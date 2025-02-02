@@ -8,7 +8,6 @@ const port = process.env.PORT || 5000;
 // middleware
 app.use(cors());
 app.use(express.json());
-console.log(process.env.DB_USER);
 
 const uri =
   `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.6cld7.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
@@ -35,9 +34,9 @@ async function run() {
     const userCollection = client.db("sample_mflix").collection("users");
 
     app.get("/users", async (req, res) => {
-      const cursor = userCollection.find();
-      const result = await cursor.toArray();
-      res.send(result);
+      // const cursor = userCollection.find();
+      // const result = await cursor.toArray();
+      res.send([]);
     });
   } finally {
     // // Ensures that the client will close when you finish/error
