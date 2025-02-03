@@ -6,7 +6,10 @@ const cors = require("cors");
 const port = process.env.PORT || 5000;
 
 // middleware
-app.use(cors());
+const corsOptions = {
+  origin: ['http://localhost:5173', 'https://firebase.web.app'],
+}
+app.use(cors(corsOptions))
 app.use(express.json());
 
 const uri =
@@ -26,18 +29,20 @@ async function run() {
     // // Connect the client to the server	(optional starting in v4.7)
     // await client.connect();
     // Send a ping to confirm a successful connection
+   
+
+    const userCollection = client.db("MosqueDB").collection("users");
+
+    app.get("/users", async (req, res) => {
+      const cursor = userCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
-
-    const userCollection = client.db("sample_mflix").collection("users");
-
-    app.get("/users", async (req, res) => {
-      // const cursor = userCollection.find();
-      // const result = await cursor.toArray();
-      res.send([]);
-    });
   } finally {
     // // Ensures that the client will close when you finish/error
     // await client.close();
@@ -46,7 +51,7 @@ async function run() {
 run().catch(console.dir);
 
 app.get("/", (req, res) => {
-  res.send("Islampur Jame Masjid IS RUNNING");
+  res.send("Islampur Jame Masjid is running");
 });
 
 app.listen(port, () => {
