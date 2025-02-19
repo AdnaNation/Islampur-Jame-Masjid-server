@@ -1,4 +1,4 @@
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const express = require("express");
 const app = express();
 require("dotenv").config();
@@ -44,6 +44,23 @@ async function run() {
       console.log(addedUser);
       const result = await userCollection.insertOne(addedUser);
       res.send(result);
+  })
+
+  // editing fees 
+
+  app.patch('/editFee/:id', async (req,res)=>{
+    const id= req.params.id;
+    const editFee = req.body
+    const query = {_id: new ObjectId(id)}
+    const updatedDoc = {
+      $set:{
+        FeeRate: editFee.FeeRate,
+        'Tarabi.fee': editFee.TarabiFee,
+        Due: editFee.DueFee
+      }
+    }
+    const result = await userCollection.updateOne(query, updatedDoc);
+    res.send(result)
   })
 
     await client.db("admin").command({ ping: 1 });
