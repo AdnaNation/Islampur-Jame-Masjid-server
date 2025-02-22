@@ -69,6 +69,16 @@ async function run() {
     res.send(result)
   })
 
+  // edit month status to paid
+  app.patch('/monthStatus', async(req,res)=>{
+    const {id, monthName} = req.body;
+    const query = {_id: new ObjectId(id), "PayMonths.monthName": monthName};
+    const result = await userCollection.updateOne(query, {
+      $set:{"PayMonths.$.status": "paid"}
+    })
+    res.send(result)
+  })
+
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
