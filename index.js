@@ -56,8 +56,8 @@ async function run() {
 
   app.patch('/editFee/:id', async (req,res)=>{
     const id= req.params.id;
-    const editFee = req.body
-    const query = {_id: new ObjectId(id)}
+    const editFee = req.body;
+    const query = {_id: new ObjectId(id)};
     const updatedDoc = {
       $set:{
         FeeRate: editFee.FeeRate,
