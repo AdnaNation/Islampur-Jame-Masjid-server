@@ -32,7 +32,12 @@ async function run() {
    
 
     const userCollection = client.db("MosqueDB").collection("users");
+    const adminCollection = client.db("MosqueDB").collection("admin");
 
+    app.get("/admin", async (req, res) => {
+      const result = await adminCollection.find().toArray();
+      res.send(result);
+    });
     app.get("/users", async (req, res) => {
       const cursor = userCollection.find();
       const result = await cursor.toArray();
