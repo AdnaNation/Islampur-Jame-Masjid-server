@@ -34,8 +34,10 @@ async function run() {
     const userCollection = client.db("MosqueDB").collection("users");
     const adminCollection = client.db("MosqueDB").collection("admin");
 
-    app.get("/admin", async (req, res) => {
-      const result = await adminCollection.find().toArray();
+    app.get("/admin/:number", async (req, res) => {
+      const number = req.params.number
+      const query = {number: number}
+      const result = await adminCollection.findOne(number);
       res.send(result);
     });
     app.get("/users", async (req, res) => {
