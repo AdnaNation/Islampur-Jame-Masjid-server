@@ -44,7 +44,10 @@ async function run() {
       const number = req.params.number;
       const query = {number: number};
       const result = await adminCollection.findOne(query);
-      const admin = result.admin;
+      let admin = false;
+      if (result){
+        admin = result.admin;
+      }
       res.send(admin);
     })
     app.get("/users", async (req, res) => {
