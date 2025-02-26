@@ -44,8 +44,8 @@ async function run() {
       const number = req.params.number;
       const query = {number: number};
       const result = await adminCollection.findOne(query);
-      const isAdmin = result.admin;
-      res.send(isAdmin);
+      const admin = result.admin;
+      res.send(admin);
     })
     app.get("/users", async (req, res) => {
       const cursor = userCollection.find();
