@@ -40,6 +40,13 @@ async function run() {
       const result = await adminCollection.findOne(query);
       res.send(result);
     });
+    app.get('/verifyAdmin/:number', async (req, res)=>{
+      const number = req.params.number;
+      const query = {number: number};
+      const result = await adminCollection.findOne(query);
+      const isAdmin = result.admin;
+      res.send(isAdmin);
+    })
     app.get("/users", async (req, res) => {
       const cursor = userCollection.find();
       const result = await cursor.toArray();
