@@ -60,7 +60,7 @@ async function run() {
   }
 
     app.get("/admin/:number", async (req, res) => {
-      const number = req.params.number
+      const number = req.params.number;
       const query = {number: number};
       const result = await adminCollection.findOne(query);
       res.send(result);
