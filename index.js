@@ -76,8 +76,14 @@ async function run() {
       res.send(admin);
     })
     app.get("/users", async (req, res) => {
-      const cursor = userCollection.find();
-      const result = await cursor.toArray();
+      const filter = req.query;
+      const query  ={
+        Name: {$regex: filter.search, $option: 'i'},
+        NameBn: {$regex: filter.search, $option: 'i'},
+        HomeName: {$regex: filter.HomeName, $option: 'i'},
+        
+      }
+      const result = await userCollection.find(query).toArray();
       res.send(result);
     });
     app.get("/user/:id", async (req, res) => {
