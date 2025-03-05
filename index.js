@@ -77,10 +77,11 @@ async function run() {
     })
     app.get("/users", async (req, res) => {
       const filter = req.query;
+      console.log(filter);
       const query  ={
-        // Name: {$regex: filter.search, $option: 'i'},
-        // NameBn: {$regex: filter.search, $option: 'i'},
-        HomeName: {$regex: filter.HomeName, $option: 'i'}
+        Name: {$regex: filter.search, $options: 'i'},
+        NameBn: {$regex: filter.searchBn, $options: 'i'},
+        HomeName: {$regex: filter.HomeName}
         
       }
       const result = await userCollection.find(query).toArray();
