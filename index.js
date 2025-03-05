@@ -78,9 +78,9 @@ async function run() {
     app.get("/users", async (req, res) => {
       const filter = req.query;
       const query  ={
-        Name: {$regex: filter.search, $option: 'i'},
-        NameBn: {$regex: filter.search, $option: 'i'},
-        HomeName: {$regex: filter.HomeName, $option: 'i'},
+        // Name: {$regex: filter.search, $option: 'i'},
+        // NameBn: {$regex: filter.search, $option: 'i'},
+        HomeName: {$regex: filter.HomeName, $option: 'i'}
         
       }
       const result = await userCollection.find(query).toArray();
