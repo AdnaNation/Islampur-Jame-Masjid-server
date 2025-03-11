@@ -130,8 +130,8 @@ async function run() {
 
   // edit month status to paid
   app.patch('/monthStatus', async(req,res)=>{
-    const {id, monthName} = req.body;
-    const query = {_id: new ObjectId(id), "PayMonths.monthName": monthName};
+    const {id, selectedMonth} = req.body;
+    const query = {_id: new ObjectId(id), "PayMonths.monthName": selectedMonth};
     const result = await userCollection.updateOne(query, {
       $set:{"PayMonths.$.status": "paid"}
     })
