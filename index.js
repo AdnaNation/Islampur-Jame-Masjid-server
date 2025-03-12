@@ -77,7 +77,6 @@ async function run() {
     })
     app.get("/users", async (req, res) => {
       const filter = req.query;
-      console.log(filter);
       const query  ={
         Name: {$regex: filter.search, $options: 'i'},
         NameBn: {$regex: filter.searchBn, $options: 'i'},
@@ -138,6 +137,14 @@ async function run() {
     res.send(result)
   })
 
+  app.patch('/multiple-months', async (req,res)=>{
+     const updating = req.body;
+     const filter = {_id: new ObjectId(updating.id), "PayMonths.monthName": { $in: updating.months } };
+     const update = { $set: { "PayMonths.$[elem].status": 'paid' } };
+     const options = { arrayFilters: [{ "elem.monthName": { $in: updating.months } }] };
+     const result = await userCollection.updateOne(filter, update, options);
+     res.send(result)
+  })
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
