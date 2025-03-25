@@ -182,8 +182,7 @@ async function run() {
           }
         }
       ]);
-      const oneDoc = await userCollection.findOne({}, { projection: { "Tarabi.active": 1 } });
-      res.send({result, active: oneDoc?.Tarabi?.active});
+      res.send(result);
     });
     await client.db("admin").command({ ping: 1 });
     console.log(
