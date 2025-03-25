@@ -169,10 +169,21 @@ async function run() {
     });
 
     app.patch("/activity", async (req, res) => {
-      const result = await userCollection.updateMany({},{
-        $set: { "Tarabi.active": true },
-      });
-      res.send(result);
+      const result = await userCollection.updateMany({}, [
+        {
+          $set: {
+            "Tarabi.active": {
+              $cond: {
+                if: { $eq: ["$Tarabi.active", true] },
+                then: false,
+                else: true
+              }
+            }
+          }
+        }
+      ]);
+      const oneDoc = await userCollection.findOne({}, { projection: { "Tarabi.active": 1 } });
+      res.send({result, active: oneDoc?.Tarabi?.active});
     });
     await client.db("admin").command({ ping: 1 });
     console.log(
