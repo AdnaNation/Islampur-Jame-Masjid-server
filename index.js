@@ -145,6 +145,11 @@ async function run() {
      const result = await userCollection.updateOne(filter, update, options);
      res.send(result)
   })
+
+  app.patch('/tarabeePaid', async (req, res)=>{
+    const id = req.body
+    res.send(id)
+  })
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
