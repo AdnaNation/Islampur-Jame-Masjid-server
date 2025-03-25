@@ -184,6 +184,10 @@ async function run() {
       ]);
       res.send(result);
     });
+    app.get('/activeStatus', async (req,res) =>{
+      const activeStatus = await userCollection.findOne({}, { projection: { "Tarabi.active": 1 } });
+      res.send(activeStatus?.Tarabi?.active);
+    })
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
