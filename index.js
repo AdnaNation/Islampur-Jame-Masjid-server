@@ -188,6 +188,31 @@ async function run() {
       const activeStatus = await userCollection.findOne({}, { projection: { "Tarabi.active": 1 } });
       res.send(activeStatus?.Tarabi?.active);
     })
+
+    app.get('/tarabi-stats', async (req,res)=>{
+      const pipeline = [
+        {
+          $match : {
+            "Tarabi.status": "paid"
+          }
+        },
+        {
+          $addFields: {
+            feeAsNumber: { $toDouble: "$Tarabi.fee" }
+          }
+        },
+        {
+          $group: {
+            _id: null,
+            totalPaidUsers: { $sum: 1 },
+            totalAmount: { $sum: "$feeAsNumber" }
+          }
+        }
+
+      ];
+      const result = await userCollection.aggregate(pipeline).toArray();
+      res.send(result[0])
+    })
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
