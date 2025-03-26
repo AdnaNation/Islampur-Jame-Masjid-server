@@ -203,6 +203,7 @@ async function run() {
         },
         {
           $group: {
+            _id: null,
             totalPaidUsers: { $sum: 1 },
             totalAmount: { $sum: "$feeAsNumber" }
           }
