@@ -210,14 +210,47 @@ async function run() {
         }
 
       ];
+      const pipeline2 = [
+        {
+          $match : {
+            "Tarabi.status": "unpaid"
+          }
+        },
+        {
+          $addFields: {
+            feeAsNumber: { $toDouble: "$Tarabi.fee" }
+          }
+        },
+        {
+          $group: {
+            _id: null,
+            totalUnpaidUsers: { $sum: 1 },
+            totalUnpaidAmount: { $sum: "$feeAsNumber" }
+          }
+        }
+
+      ];
       const result = await userCollection.aggregate(pipeline).toArray();
+      const result2 = await userCollection.aggregate(pipeline2).toArray();
+      console.log(result);
+      console.log(result2);
       if (result.length === 0) {
         return res.send({
-          totalPaidUsers: 0,
-          totalAmount: 0
+          paidStats: {
+            totalPaidUsers: 0,
+            totalAmount: 0
+          },
+          unpaidStats:{
+            totalUnpaidUsers: result2[0].totalUnpaidUsers,
+            totalUnpaidAmount: result2[0].totalUnpaidAmount
+          }
+
         });
       }
-      res.send(result[0])
+      res.send({
+        paidStats: result[0],
+        unpaidStats: result2[0]
+      });
     })
     await client.db("admin").command({ ping: 1 });
     console.log(
@@ -237,3 +270,8 @@ app.get("/", (req, res) => {
 app.listen(port, () => {
   console.log(`Islampur Jame Masjid is running on port, ${port}`);
 });
+
+
+
+
+
