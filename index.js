@@ -203,7 +203,6 @@ async function run() {
         },
         {
           $group: {
-            _id: null,
             totalPaidUsers: { $sum: 1 },
             totalAmount: { $sum: "$feeAsNumber" }
           }
@@ -211,6 +210,12 @@ async function run() {
 
       ];
       const result = await userCollection.aggregate(pipeline).toArray();
+      if (result.length === 0) {
+        return res.send({
+          totalPaidUsers: 0,
+          totalAmount: 0
+        });
+      }
       res.send(result[0])
     })
     await client.db("admin").command({ ping: 1 });
