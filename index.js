@@ -32,6 +32,7 @@ async function run() {
 
     const userCollection = client.db("MosqueDB").collection("users");
     const adminCollection = client.db("MosqueDB").collection("admin");
+    const paymentCollection = client.db("MosqueDB").collection("payment");
 
     // jwt related api
     app.post("/jwt", async (req, res) => {
@@ -251,6 +252,12 @@ async function run() {
         paidStats: result[0],
         unpaidStats: result2[0]
       });
+    })
+    
+    app.post('/payment', async (req, res)=>{
+      const paymentData = req.body;
+      const result = await paymentCollection.insertOne(paymentData)
+      res.send(result)
     })
     await client.db("admin").command({ ping: 1 });
     console.log(
