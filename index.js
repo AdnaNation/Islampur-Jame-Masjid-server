@@ -259,6 +259,10 @@ async function run() {
       const result = await paymentCollection.insertOne(paymentData)
       res.send(result)
     })
+    app.get('/paymentHistory', async (req, res)=>{
+      const result = await paymentCollection.find().toArray()
+      res.send(result)
+    })
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
