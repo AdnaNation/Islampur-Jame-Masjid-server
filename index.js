@@ -190,6 +190,38 @@ async function run() {
       res.send(activeStatus?.Tarabi?.active);
     })
 
+    app.get('/monthly-stats', async (req, res)=>{
+      const pipeline = [
+        {
+          $addFields: {
+            feeRateAsNumber: { $toDouble: "$FeeRate" },
+            paidMonthCount: {
+              $size: {
+                $filter: {
+                  input: "$PayMonths",
+                  as: "month",
+                  cond: { $eq: ["$$month.status", "paid"] }
+                }
+              }
+            }
+          }
+        },
+        {
+          $addFields: {
+            totalPaidByUser: { $multiply: ["$feeRateAsNumber", "$paidMonthCount"] }
+          }
+        },
+        {
+          $group: {
+            _id: null,
+            totalAmount: { $sum: "$totalPaidByUser" }
+          }
+        }
+      ];
+      const result = await userCollection.aggregate(pipeline).toArray();
+      res.send(result)
+    })
+
     app.get('/tarabi-stats', async (req,res)=>{
       const pipeline = [
         {
@@ -209,7 +241,7 @@ async function run() {
             totalAmount: { $sum: "$feeAsNumber" }
           }
         }
-
+          
       ];
       const pipeline2 = [
         {
@@ -233,8 +265,6 @@ async function run() {
       ];
       const result = await userCollection.aggregate(pipeline).toArray();
       const result2 = await userCollection.aggregate(pipeline2).toArray();
-      console.log(result);
-      console.log(result2);
       if (result.length === 0) {
         return res.send({
           paidStats: {
@@ -263,6 +293,47 @@ async function run() {
       const result = await paymentCollection.find().toArray()
       res.send(result)
     })
+
+    app.get('/total-payment', async (req, res) => {
+      
+        const pipeline = [
+          {
+            $addFields: {
+              feeAsNumber: {
+                $cond: {
+                  if: { $isNumber: "$fee" },
+                  then: "$fee",
+                  else: { $toDouble: "$fee" }
+                }
+              }
+            }
+          },
+          {
+            $group: {
+              _id: "$type",
+              totalAmount: { $sum: "$feeAsNumber" },
+              count: { $sum: 1 }
+            }
+          }
+        ];
+    
+        const result = await paymentCollection.aggregate(pipeline).toArray();
+        if (result.length === 0){
+          return res.send( {
+            _id: Tarabi,
+            totalAmount: 0,
+            count: 0
+          },
+          {
+            _id: Monthly,
+            totalAmount: 0,
+            count: 0
+          })
+        }
+        res.send(result);
+     
+    });
+    
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
