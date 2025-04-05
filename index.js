@@ -311,26 +311,26 @@ async function run() {
           {
             $group: {
               _id: "$type",
-              totalAmount: { $sum: "$feeAsNumber" },
-              count: { $sum: 1 }
+              totalAmount: { $sum: "$feeAsNumber" }
             }
           }
         ];
     
         const result = await paymentCollection.aggregate(pipeline).toArray();
-        if (result.length === 0){
-          return res.send( {
-            _id: Tarabi,
-            totalAmount: 0,
-            count: 0
+        res.send({
+          Tarabi: result[0] ||  {
+            _id: 'Tarabi',
+            totalAmount: 0
           },
-          {
-            _id: Monthly,
-            totalAmount: 0,
-            count: 0
-          })
-        }
-        res.send(result);
+          Monthly: result[1] ||  {
+            _id: 'Monthly',
+            totalAmount: 0
+          },
+          Due: result[2] ||  {
+            _id: 'Due',
+            totalAmount: 0
+          }
+        });
      
     });
     
