@@ -169,6 +169,18 @@ async function run() {
       res.send(result);
     });
 
+    app.patch('/payDue/:id', async (req, res)=>{
+      const id = req.params.id;
+      const editFee = req.body;
+      const query = {_id: new ObjectId(id)}
+      const result = await userCollection.updateOne(query, {
+        $set: {
+          Due: editFee.DueFee
+        }
+      } )
+      res.send(result)
+    })
+
     app.patch("/activity", async (req, res) => {
       const result = await userCollection.updateMany({}, [
         {
@@ -321,9 +333,7 @@ async function run() {
         const mapped = {};
   result.forEach(item => {
     mapped[item._id] = item;
-  });  
-  console.log(mapped);
-
+  });
         res.send({
     Tarabi: mapped.Tarabi || { _id: "Tarabi", totalAmount: 0 },
     Monthly: mapped.Monthly || { _id: "Monthly", totalAmount: 0 },
