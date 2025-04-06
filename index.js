@@ -317,20 +317,18 @@ async function run() {
         ];
     
         const result = await paymentCollection.aggregate(pipeline).toArray();
+
+        const mapped = {};
+  result.forEach(item => {
+    mapped[item._id] = item;
+  });  
+  console.log(mapped);
+
         res.send({
-          Tarabi: result[0] ||  {
-            _id: 'Tarabi',
-            totalAmount: 0
-          },
-          Monthly: result[1] ||  {
-            _id: 'Monthly',
-            totalAmount: 0
-          },
-          Due: result[2] ||  {
-            _id: 'Due',
-            totalAmount: 0
-          }
-        });
+    Tarabi: mapped.Tarabi || { _id: "Tarabi", totalAmount: 0 },
+    Monthly: mapped.Monthly || { _id: "Monthly", totalAmount: 0 },
+    Due: mapped.Due || { _id: "Due", totalAmount: 0 }
+  });
      
     });
     
