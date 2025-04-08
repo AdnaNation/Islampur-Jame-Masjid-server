@@ -94,6 +94,19 @@ async function run() {
       res.send(result);
     });
 
+    app.get('/usersName/:home', async (req, res)=>{
+      const userHome = req.params.home;
+      const query = {HomeName: userHome}
+      if(query.HomeName=== 'home'){
+        const result = await userCollection.find({}, { projection: { NameBn: 1 }}).toArray()
+        res.send(result)
+      }
+      else{
+        const result = await userCollection.find(query, { projection: { NameBn: 1 } }).toArray()
+     res.send(result)
+      }
+    })
+
     app.get("/user/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
@@ -307,8 +320,14 @@ async function run() {
         name: {$regex: filter.name},
         home: {$regex: filter.home}
       }
-      const result = await paymentCollection.find(query).toArray()
+      if(query.home.$regex === 'home'){
+        const result = await paymentCollection.find().toArray();
+        res.send(result)
+      }
+      else{
+        const result = await paymentCollection.find(query).toArray()
       res.send(result)
+      }
     })
 
     app.get('/total-payment', async (req, res) => {
