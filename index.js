@@ -311,19 +311,6 @@ async function run() {
       res.send(result)
     })
 
-
-    app.get("/users", async (req, res) => {
-      const filter = req.query;
-      console.log(filter);
-      const query = {
-        Name: { $regex: filter.search, $options: "i" },
-        NameBn: { $regex: filter.searchBn, $options: "i" },
-        HomeName: { $regex: filter.HomeName },
-      };
-      const result = await userCollection.find(query).toArray();
-      res.send(result);
-    });
-
     app.get('/total-payment', async (req, res) => {
       
         const pipeline = [
