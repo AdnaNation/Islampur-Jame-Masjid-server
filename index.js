@@ -302,9 +302,27 @@ async function run() {
       res.send(result)
     })
     app.get('/paymentHistory', async (req, res)=>{
-      const result = await paymentCollection.find().toArray()
+      const filter = req.query;
+      const query = {
+        name: {$regex: filter.name},
+        home: {$regex: filter.home}
+      }
+      const result = await paymentCollection.find(query).toArray()
       res.send(result)
     })
+
+
+    app.get("/users", async (req, res) => {
+      const filter = req.query;
+      console.log(filter);
+      const query = {
+        Name: { $regex: filter.search, $options: "i" },
+        NameBn: { $regex: filter.searchBn, $options: "i" },
+        HomeName: { $regex: filter.HomeName },
+      };
+      const result = await userCollection.find(query).toArray();
+      res.send(result);
+    });
 
     app.get('/total-payment', async (req, res) => {
       
