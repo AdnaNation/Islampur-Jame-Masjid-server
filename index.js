@@ -131,6 +131,21 @@ async function run() {
 
     // editing fees
 
+    app.patch("/editUserData/:id", async (req, res) => {
+      const id = req.params.id;
+      const userData = req.body;
+      const query = { _id: new ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          NameBn: userData.NameBn,
+          Name: userData.Name,
+          HomeName: userData.HomeName,
+          Number: userData.Number
+        },
+      };
+      const result = await userCollection.updateOne(query, updatedDoc);
+      res.send(result);
+    });
     app.patch("/editFee/:id", async (req, res) => {
       const id = req.params.id;
       const editFee = req.body;
