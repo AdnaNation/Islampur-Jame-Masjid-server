@@ -135,7 +135,7 @@ async function run() {
       const id = req.params.id;
       const userData = req.body;
       const query = { _id: new ObjectId(id) };
-      const query2 = {name: userData.NameBn, home: userData.HomeName}
+      const query2 = {userId: new ObjectId(id)}
       const updatedDoc = {
         $set: {
           NameBn: userData.NameBn,
@@ -151,8 +151,8 @@ async function run() {
         }
       }
       const result = await userCollection.updateOne(query, updatedDoc);
-      if (result){
-        await paymentCollection.updateMany(query2, updatedDoc2)
+      if (result.modifiedCount > 0){
+        paymentCollection.updateMany(query2, updatedDoc2)
       }
       res.send(result);
     });
