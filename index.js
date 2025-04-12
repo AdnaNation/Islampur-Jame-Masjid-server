@@ -135,6 +135,7 @@ async function run() {
       const id = req.params.id;
       const userData = req.body;
       const query = { _id: new ObjectId(id) };
+      const query2 = {name: userData.NameBn, home: userData.HomeName}
       const updatedDoc = {
         $set: {
           NameBn: userData.NameBn,
@@ -143,7 +144,16 @@ async function run() {
           Number: userData.Number
         },
       };
+      const updatedDoc2 = {
+        $set: {
+          name: userData.NameBn,
+          home: userData.HomeName
+        }
+      }
       const result = await userCollection.updateOne(query, updatedDoc);
+      if (result){
+        await paymentCollection.updateMany(query2, updatedDoc2)
+      }
       res.send(result);
     });
     app.patch("/editFee/:id", async (req, res) => {
