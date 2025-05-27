@@ -88,6 +88,12 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/shopKeeper", async (req, res) => {
+    
+      const result = await shopKeeperCollection.find().toArray();
+      res.send(result);
+    });
+
     app.get("/usersHome", async (req, res) => {
       const result = await userCollection
         .find({}, { projection: { HomeName: 1 } })
