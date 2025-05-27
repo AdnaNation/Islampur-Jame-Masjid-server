@@ -31,6 +31,7 @@ async function run() {
     // Send a ping to confirm a successful connection
 
     const userCollection = client.db("MosqueDB").collection("users");
+    const shopKeeperCollection = client.db("MosqueDB").collection("shopKeeper");
     const adminCollection = client.db("MosqueDB").collection("admin");
     const paymentCollection = client.db("MosqueDB").collection("payment");
 
@@ -129,13 +130,26 @@ async function run() {
       res.send(result);
     });
 
+    app.post('/addShopKeeper', async (req,res)=>{
+      const addedUser = req.body;
+      const query = {
+        NameBn: addedUser.NameBn,
+      };
+      const existingUser = await shopKeeperCollection.findOne(query);
+      if (existingUser) {
+        return res.send({ message: "user already exists", insertedId: null });
+      }
+       const result = await shopKeeperCollection.insertOne(addedUser);
+      res.send(result);
+    })
+
     // editing fees
 
     app.patch("/editUserData/:id", async (req, res) => {
       const id = req.params.id;
       const userData = req.body;
       const query = { _id: new ObjectId(id) };
-      const query2 = {userId: new ObjectId(id)}
+      const query2 = {userId:  id}
       const updatedDoc = {
         $set: {
           NameBn: userData.NameBn,
@@ -210,6 +224,7 @@ async function run() {
     app.patch('/payDue/:id', async (req, res)=>{
       const id = req.params.id;
       const editFee = req.body;
+      console.log(editFee);
       const query = {_id: new ObjectId(id)}
       const result = await userCollection.updateOne(query, {
         $set: {
