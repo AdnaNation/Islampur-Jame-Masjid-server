@@ -101,6 +101,13 @@ async function run() {
       res.send(result);
     });
 
+    app.get('/shopKeeper/:id', async (req,res)=>{
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)}
+      const result = await shopKeeperCollection.findOne(query);
+      res.send(result)
+    })
+
     app.get('/usersName/:home', async (req, res)=>{
       const userHome = req.params.home;
       const query = {HomeName: userHome}
