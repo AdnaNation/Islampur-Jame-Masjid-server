@@ -4,7 +4,9 @@ const app = express();
 require("dotenv").config();
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
+const { default: axios } = require("axios");
 const port = process.env.PORT || 5000;
+
 
 // middleware
 const corsOptions = {
@@ -44,6 +46,16 @@ async function run() {
       });
       res.send({ token });
     });
+    
+
+    app.get("/check-balance", async (req, res) => {
+  
+    const url = `https://api.mimsms.com/api/SmsSending/balanceCheck?userName=${process.env.API_USERNAME}&Apikey=${process.env.API_KEY}`;
+    const response = await axios.get(url);
+    res.json({balance: response.data.responseResult})
+    console.log(response.data.responseResult);
+  
+});
 
     // middlewares
     const verifyToken = (req, res, next) => {
