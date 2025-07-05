@@ -53,8 +53,6 @@ async function run() {
     const url = `https://api.mimsms.com/api/SmsSending/balanceCheck?userName=${process.env.API_USERNAME}&Apikey=${process.env.API_KEY}`;
     const response = await axios.get(url);
     res.json({balance: response.data.responseResult})
-    console.log(response.data.responseResult);
-  
 });
 
     // middlewares
