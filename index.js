@@ -7,7 +7,6 @@ const jwt = require("jsonwebtoken");
 const { default: axios } = require("axios");
 const port = process.env.PORT || 5000;
 
-
 // middleware
 const corsOptions = {
   origin: ["http://localhost:5173", "https://islampur-jame-masjid.vercel.app"],
@@ -46,14 +45,12 @@ async function run() {
       });
       res.send({ token });
     });
-    
 
     app.get("/check-balance", async (req, res) => {
-  
-    const url = `https://api.mimsms.com/api/SmsSending/balanceCheck?userName=${process.env.API_USERNAME}&Apikey=${process.env.API_KEY}`;
-    const response = await axios.get(url);
-    res.json({balance: response.data.responseResult})
-});
+      const url = `https://api.mimsms.com/api/SmsSending/balanceCheck?userName=${process.env.API_USERNAME}&Apikey=${process.env.API_KEY}`;
+      const response = await axios.get(url);
+      res.json({ balance: response.data.responseResult });
+    });
 
     // middlewares
     const verifyToken = (req, res, next) => {
@@ -99,7 +96,6 @@ async function run() {
     });
 
     app.get("/shopKeeper", async (req, res) => {
-    
       const result = await shopKeeperCollection.find().toArray();
       res.send(result);
     });
@@ -111,25 +107,28 @@ async function run() {
       res.send(result);
     });
 
-    app.get('/shopKeeper/:id', async (req,res)=>{
+    app.get("/shopKeeper/:id", async (req, res) => {
       const id = req.params.id;
-      const query = {_id: new ObjectId(id)}
+      const query = { _id: new ObjectId(id) };
       const result = await shopKeeperCollection.findOne(query);
-      res.send(result)
-    })
+      res.send(result);
+    });
 
-    app.get('/usersName/:home', async (req, res)=>{
+    app.get("/usersName/:home", async (req, res) => {
       const userHome = req.params.home;
-      const query = {HomeName: userHome}
-      if(query.HomeName=== 'home'){
-        const result = await userCollection.find({}, { projection: { NameBn: 1 }}).toArray()
-        res.send(result)
+      const query = { HomeName: userHome };
+      if (query.HomeName === "home") {
+        const result = await userCollection
+          .find({}, { projection: { NameBn: 1 } })
+          .toArray();
+        res.send(result);
+      } else {
+        const result = await userCollection
+          .find(query, { projection: { NameBn: 1 } })
+          .toArray();
+        res.send(result);
       }
-      else{
-        const result = await userCollection.find(query, { projection: { NameBn: 1 } }).toArray()
-     res.send(result)
-      }
-    })
+    });
 
     app.get("/user/:id", async (req, res) => {
       const id = req.params.id;
@@ -153,7 +152,7 @@ async function run() {
       res.send(result);
     });
 
-    app.post('/addShopKeeper', async (req,res)=>{
+    app.post("/addShopKeeper", async (req, res) => {
       const addedUser = req.body;
       const query = {
         NameBn: addedUser.NameBn,
@@ -162,9 +161,9 @@ async function run() {
       if (existingUser) {
         return res.send({ message: "user already exists", insertedId: null });
       }
-       const result = await shopKeeperCollection.insertOne(addedUser);
+      const result = await shopKeeperCollection.insertOne(addedUser);
       res.send(result);
-    })
+    });
 
     // editing fees
 
@@ -172,24 +171,24 @@ async function run() {
       const id = req.params.id;
       const userData = req.body;
       const query = { _id: new ObjectId(id) };
-      const query2 = {userId:  id}
+      const query2 = { userId: id };
       const updatedDoc = {
         $set: {
           NameBn: userData.NameBn,
           Name: userData.Name,
           HomeName: userData.HomeName,
-          Number: userData.Number
+          Number: userData.Number,
         },
       };
       const updatedDoc2 = {
         $set: {
           name: userData.NameBn,
-          home: userData.HomeName
-        }
-      }
+          home: userData.HomeName,
+        },
+      };
       const result = await userCollection.updateOne(query, updatedDoc);
-      if (result.modifiedCount > 0){
-        paymentCollection.updateMany(query2, updatedDoc2)
+      if (result.modifiedCount > 0) {
+        paymentCollection.updateMany(query2, updatedDoc2);
       }
       res.send(result);
     });
@@ -244,18 +243,18 @@ async function run() {
       res.send(result);
     });
 
-    app.patch('/payDue/:id', async (req, res)=>{
+    app.patch("/payDue/:id", async (req, res) => {
       const id = req.params.id;
       const editFee = req.body;
       console.log(editFee);
-      const query = {_id: new ObjectId(id)}
+      const query = { _id: new ObjectId(id) };
       const result = await userCollection.updateOne(query, {
         $set: {
-          Due: editFee.DueFee
-        }
-      } )
-      res.send(result)
-    })
+          Due: editFee.DueFee,
+        },
+      });
+      res.send(result);
+    });
 
     app.patch("/activity", async (req, res) => {
       const result = await userCollection.updateMany({}, [
@@ -265,20 +264,23 @@ async function run() {
               $cond: {
                 if: { $eq: ["$Tarabi.active", true] },
                 then: false,
-                else: true
-              }
-            }
-          }
-        }
+                else: true,
+              },
+            },
+          },
+        },
       ]);
       res.send(result);
     });
-    app.get('/activeStatus', async (req,res) =>{
-      const activeStatus = await userCollection.findOne({}, { projection: { "Tarabi.active": 1 } });
+    app.get("/activeStatus", async (req, res) => {
+      const activeStatus = await userCollection.findOne(
+        {},
+        { projection: { "Tarabi.active": 1 } }
+      );
       res.send(activeStatus?.Tarabi?.active);
-    })
+    });
 
-    app.get('/monthly-stats', async (req, res)=>{
+    app.get("/monthly-stats", async (req, res) => {
       const pipeline = [
         {
           $addFields: {
@@ -288,68 +290,68 @@ async function run() {
                 $filter: {
                   input: "$PayMonths",
                   as: "month",
-                  cond: { $eq: ["$$month.status", "paid"] }
-                }
-              }
-            }
-          }
+                  cond: { $eq: ["$$month.status", "paid"] },
+                },
+              },
+            },
+          },
         },
         {
           $addFields: {
-            totalPaidByUser: { $multiply: ["$feeRateAsNumber", "$paidMonthCount"] }
-          }
+            totalPaidByUser: {
+              $multiply: ["$feeRateAsNumber", "$paidMonthCount"],
+            },
+          },
         },
         {
           $group: {
             _id: null,
-            totalAmount: { $sum: "$totalPaidByUser" }
-          }
-        }
+            totalAmount: { $sum: "$totalPaidByUser" },
+          },
+        },
       ];
       const result = await userCollection.aggregate(pipeline).toArray();
-      res.send(result)
-    })
+      res.send(result);
+    });
 
-    app.get('/tarabi-stats', async (req,res)=>{
+    app.get("/tarabi-stats", async (req, res) => {
       const pipeline = [
         {
-          $match : {
-            "Tarabi.status": "paid"
-          }
+          $match: {
+            "Tarabi.status": "paid",
+          },
         },
         {
           $addFields: {
-            feeAsNumber: { $toDouble: "$Tarabi.fee" }
-          }
+            feeAsNumber: { $toDouble: "$Tarabi.fee" },
+          },
         },
         {
           $group: {
             _id: null,
             totalPaidUsers: { $sum: 1 },
-            totalAmount: { $sum: "$feeAsNumber" }
-          }
-        }
-          
+            totalAmount: { $sum: "$feeAsNumber" },
+          },
+        },
       ];
       const pipeline2 = [
         {
-          $match : {
-            "Tarabi.status": "unpaid"
-          }
+          $match: {
+            "Tarabi.status": "unpaid",
+          },
         },
         {
           $addFields: {
-            feeAsNumber: { $toDouble: "$Tarabi.fee" }
-          }
+            feeAsNumber: { $toDouble: "$Tarabi.fee" },
+          },
         },
         {
           $group: {
             _id: null,
             totalUnpaidUsers: { $sum: 1 },
-            totalUnpaidAmount: { $sum: "$feeAsNumber" }
-          }
-        }
-
+            totalUnpaidAmount: { $sum: "$feeAsNumber" },
+          },
+        },
       ];
       const result = await userCollection.aggregate(pipeline).toArray();
       const result2 = await userCollection.aggregate(pipeline2).toArray();
@@ -357,78 +359,109 @@ async function run() {
         return res.send({
           paidStats: {
             totalPaidUsers: 0,
-            totalAmount: 0
+            totalAmount: 0,
           },
-          unpaidStats:{
+          unpaidStats: {
             totalUnpaidUsers: result2[0].totalUnpaidUsers,
-            totalUnpaidAmount: result2[0].totalUnpaidAmount
-          }
-
+            totalUnpaidAmount: result2[0].totalUnpaidAmount,
+          },
         });
       }
       res.send({
         paidStats: result[0],
-        unpaidStats: result2[0]
+        unpaidStats: result2[0],
       });
-    })
-    
-    app.post('/payment', async (req, res)=>{
+    });
+
+    app.post("/payment", async (req, res) => {
       const paymentData = req.body;
-      const result = await paymentCollection.insertOne(paymentData)
-      res.send(result)
-    })
-    app.get('/paymentHistory', async (req, res)=>{
+      const result = await paymentCollection.insertOne(paymentData);
+      res.send(result);
+    });
+    app.get("/paymentHistory", async (req, res) => {
       const filter = req.query;
       const query = {
-        name: {$regex: filter.name},
-        home: {$regex: filter.home}
-      }
-      if(query.home.$regex === 'home'){
+        name: { $regex: filter.name },
+        home: { $regex: filter.home },
+      };
+      if (query.home.$regex === "home") {
         const result = await paymentCollection.find().toArray();
-        res.send(result)
+        res.send(result);
+      } else {
+        const result = await paymentCollection.find(query).toArray();
+        res.send(result);
       }
-      else{
-        const result = await paymentCollection.find(query).toArray()
-      res.send(result)
-      }
-    })
-
-    app.get('/total-payment', async (req, res) => {
-      
-        const pipeline = [
-          {
-            $addFields: {
-              feeAsNumber: {
-                $cond: {
-                  if: { $isNumber: "$fee" },
-                  then: "$fee",
-                  else: { $toDouble: "$fee" }
-                }
-              }
-            }
-          },
-          {
-            $group: {
-              _id: "$type",
-              totalAmount: { $sum: "$feeAsNumber" }
-            }
-          }
-        ];
-    
-        const result = await paymentCollection.aggregate(pipeline).toArray();
-
-        const mapped = {};
-  result.forEach(item => {
-    mapped[item._id] = item;
-  });
-        res.send({
-    Tarabi: mapped.Tarabi || { _id: "Tarabi", totalAmount: 0 },
-    Monthly: mapped.Monthly || { _id: "Monthly", totalAmount: 0 },
-    Due: mapped.Due || { _id: "Due", totalAmount: 0 }
-  });
-     
     });
-    
+
+    app.get("/total-payment", async (req, res) => {
+      const pipeline = [
+        {
+          $addFields: {
+            feeAsNumber: {
+              $cond: {
+                if: { $isNumber: "$fee" },
+                then: "$fee",
+                else: { $toDouble: "$fee" },
+              },
+            },
+          },
+        },
+        {
+          $group: {
+            _id: "$type",
+            totalAmount: { $sum: "$feeAsNumber" },
+          },
+        },
+      ];
+
+      const result = await paymentCollection.aggregate(pipeline).toArray();
+
+      const mapped = {};
+      result.forEach((item) => {
+        mapped[item._id] = item;
+      });
+      res.send({
+        Tarabi: mapped.Tarabi || { _id: "Tarabi", totalAmount: 0 },
+        Monthly: mapped.Monthly || { _id: "Monthly", totalAmount: 0 },
+        Due: mapped.Due || { _id: "Due", totalAmount: 0 },
+      });
+    });
+
+    app.post("/sms", async (req, res) => {
+      const { number, message } = req.body;
+      const payload = {
+        UserName: `${process.env.API_USERNAME}`,
+        Apikey: `${process.env.API_KEY}`,
+        MobileNumber: `88${number}`,
+        CampaignId: "Islampur Jame Masjid",
+        SenderName: "8809601004618",
+        TransactionType: "T",
+        Message: message,
+      };
+      try {
+        const response = await axios.post(
+          "https://api.mimsms.com/api/SmsSending/SMS",
+          payload,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+          }
+        );
+
+        res.send({
+          success: true,
+          data: response.data,
+        });
+      } catch (error) {
+        res.status(500).send({
+          success: false,
+          error: error.response?.data || error.message,
+        });
+      }
+    });
+
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
@@ -447,8 +480,3 @@ app.get("/", (req, res) => {
 app.listen(port, () => {
   console.log(`Islampur Jame Masjid is running on port, ${port}`);
 });
-
-
-
-
-
