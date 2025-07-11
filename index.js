@@ -106,6 +106,12 @@ async function run() {
         .toArray();
       res.send(result);
     });
+    app.get("/usersNumber", async (req, res) => {
+      const result = await userCollection
+        .find({ Number: { $regex: /^\d{11}$/ } }, { projection: { Number: 1 } })
+        .toArray();
+      res.send(result);
+    });
 
     app.get("/shopKeeper/:id", async (req, res) => {
       const id = req.params.id;
