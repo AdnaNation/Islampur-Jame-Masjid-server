@@ -95,7 +95,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/user/:number", async (req, res) => {
+    app.get("/userByNumber/:number", async (req, res) => {
       const number = req.params.number;
       const query = { Number: number };
       const result = await userCollection.findOne(query);
