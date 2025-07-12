@@ -95,6 +95,13 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/user/:number", async (req, res) => {
+      const number = req.params.number;
+      const query = { Number: number };
+      const result = await userCollection.findOne(query);
+      res.send(result);
+    });
+
     app.get("/shopKeeper", async (req, res) => {
       const result = await shopKeeperCollection.find().toArray();
       res.send(result);
