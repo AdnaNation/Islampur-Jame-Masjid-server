@@ -35,6 +35,7 @@ async function run() {
     const shopKeeperCollection = client.db("MosqueDB").collection("shopKeeper");
     const adminCollection = client.db("MosqueDB").collection("admin");
     const paymentCollection = client.db("MosqueDB").collection("payment");
+    const smsCollection = client.db("MosqueDB").collection("sms");
 
     // jwt related api
     app.post("/jwt", async (req, res) => {
@@ -439,7 +440,7 @@ async function run() {
         Due: mapped.Due || { _id: "Due", totalAmount: 0 },
       });
     });
-
+    // sms sending api
     app.post("/sms", async (req, res) => {
       const { number, message } = req.body;
       const payload = {
@@ -473,6 +474,31 @@ async function run() {
           error: error.response?.data || error.message,
         });
       }
+    });
+
+    app.post("/sms-db", async (req, res) => {
+      const body = req.body;
+      const alreadyExisted = await smsCollection.findOne({
+        number: body.number,
+      });
+      if (!alreadyExisted) {
+        const insertResult = await smsCollection.insertOne(body);
+        return res.send({ status: "inserted", result: insertResult });
+      }
+
+      if (alreadyExisted.lastSendingMonth !== body.lastSendingMonth) {
+        const updateResult = await smsCollection.updateOne(
+          { number: body.number },
+          {
+            $set: { lastSendingMonth: body.lastSendingMonth },
+          }
+        );
+        return res.send({ status: "updated", result: updateResult });
+      }
+      return res.send({
+        status: "skipped",
+        message: "Already sent for this month",
+      });
     });
 
     await client.db("admin").command({ ping: 1 });
