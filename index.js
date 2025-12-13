@@ -672,7 +672,7 @@ async function run() {
     };
 
     cron.schedule(
-      "49 12 13 12 *",
+      "57 12 13 12 *",
       async () => {
         try {
           console.log("⏰ Auto year closing started...");
