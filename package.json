@@ -6,6 +6,7 @@
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.12.0",
+    "node-cron": "^4.2.1",
     "tronweb": "^6.0.1"
   },
   "name": "islampur-jame-masjid-server",
