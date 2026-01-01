@@ -3,7 +3,6 @@ const express = require("express");
 const app = express();
 require("dotenv").config();
 const cors = require("cors");
-const cron = require("node-cron");
 const jwt = require("jsonwebtoken");
 const { default: axios } = require("axios");
 const port = process.env.PORT || 5000;
@@ -33,11 +32,11 @@ async function run() {
     // Send a ping to confirm a successful connection
 
     const userCollection = client.db("MosqueDB").collection("users");
-    const userCollection2 = client.db("MosqueDB").collection("usersdata");
     const shopKeeperCollection = client.db("MosqueDB").collection("shopKeeper");
     const adminCollection = client.db("MosqueDB").collection("admin");
     const paymentCollection = client.db("MosqueDB").collection("payment");
     const smsCollection = client.db("MosqueDB").collection("sms");
+    const lastClosingCollection = client.db("MosqueDB").collection("yearClose");
 
     // jwt related api
     app.post("/jwt", async (req, res) => {
@@ -503,118 +502,48 @@ async function run() {
       });
     });
 
-    // app.patch("/closing-year", (req, res) => {
-    //   userCollection2
-    //     .updateMany({}, [
-    //       {
-    //         $set: {
-    //           unpaidCount: {
-    //             $size: {
-    //               $filter: {
-    //                 input: "$PayMonths",
-    //                 as: "m",
-    //                 cond: { $eq: ["$$m.status", "unpaid"] },
-    //               },
-    //             },
-    //           },
-    //         },
-    //       },
-    //       {
-    //         $set: {
-    //           prevYear: {
-    //             PayMonths: "$PayMonths",
-    //             Tarabi: "$Tarabi",
-    //             FeeRate: "$FeeRate",
-    //             Due: {
-    //               $add: [
-    //                 {
-    //                   $cond: [
-    //                     { $eq: ["$Tarabi.status", "unpaid"] },
-    //                     { $toDouble: "$Tarabi.fee" },
-    //                     0,
-    //                   ],
-    //                 },
-    //                 {
-    //                   $multiply: [{ $toDouble: "$FeeRate" }, "$unpaidCount"],
-    //                 },
-    //                 { $toDouble: "$Due" },
-    //               ],
-    //             },
-    //           },
-    //         },
-    //       },
-    //       {
-    //         $set: {
-    //           Due: {
-    //             $add: [
-    //               {
-    //                 $cond: [
-    //                   { $eq: ["$Tarabi.status", "unpaid"] },
-    //                   { $toDouble: "$Tarabi.fee" },
-    //                   0,
-    //                 ],
-    //               },
-    //               {
-    //                 $multiply: [{ $toDouble: "$FeeRate" }, "$unpaidCount"],
-    //               },
-    //               { $toDouble: "$Due" },
-    //             ],
-    //           },
-    //         },
-    //       },
-    //       {
-    //         $set: {
-    //           PayMonths: {
-    //             $map: {
-    //               input: "$PayMonths",
-    //               as: "month",
-    //               in: {
-    //                 monthName: "$$month.monthName",
-    //                 status: "unpaid",
-    //               },
-    //             },
-    //           },
-    //           "Tarabi.status": "unpaid",
-    //         },
-    //       },
-    //       { $unset: "unpaidCount" },
-    //     ])
-    //     .then((result) => {
-    //       if (result.matchedCount === 0) {
-    //         res.status(404).send({ message: "User not found" });
-    //       } else {
-    //         res.send({
-    //           message: "Year closed for user!",
-    //           modifiedCount: result.modifiedCount,
-    //         });
-    //       }
-    //     })
-    //     .catch((err) => {
-    //       console.error(err);
-    //       res.status(500).send({ error: "Something went wrong" });
-    //     });
-    // });
-    const closeYear = async () => {
-      return userCollection2.updateMany({}, [
-        {
-          $set: {
-            unpaidCount: {
-              $size: {
-                $filter: {
-                  input: "$PayMonths",
-                  as: "m",
-                  cond: { $eq: ["$$m.status", "unpaid"] },
+    app.patch("/closing-year", (req, res) => {
+      userCollection
+        .updateMany({}, [
+          {
+            $set: {
+              unpaidCount: {
+                $size: {
+                  $filter: {
+                    input: "$PayMonths",
+                    as: "m",
+                    cond: { $eq: ["$$m.status", "unpaid"] },
+                  },
                 },
               },
             },
           },
-        },
-        {
-          $set: {
-            prevYear: {
-              PayMonths: "$PayMonths",
-              Tarabi: "$Tarabi",
-              FeeRate: "$FeeRate",
+          {
+            $set: {
+              prevYear: {
+                PayMonths: "$PayMonths",
+                Tarabi: "$Tarabi",
+                FeeRate: "$FeeRate",
+                Due: {
+                  $add: [
+                    {
+                      $cond: [
+                        { $eq: ["$Tarabi.status", "unpaid"] },
+                        { $toDouble: "$Tarabi.fee" },
+                        0,
+                      ],
+                    },
+                    {
+                      $multiply: [{ $toDouble: "$FeeRate" }, "$unpaidCount"],
+                    },
+                    { $toDouble: "$Due" },
+                  ],
+                },
+              },
+            },
+          },
+          {
+            $set: {
               Due: {
                 $add: [
                   {
@@ -632,60 +561,78 @@ async function run() {
               },
             },
           },
-        },
-        {
-          $set: {
-            Due: {
-              $add: [
-                {
-                  $cond: [
-                    { $eq: ["$Tarabi.status", "unpaid"] },
-                    { $toDouble: "$Tarabi.fee" },
-                    0,
-                  ],
-                },
-                {
-                  $multiply: [{ $toDouble: "$FeeRate" }, "$unpaidCount"],
-                },
-                { $toDouble: "$Due" },
-              ],
-            },
-          },
-        },
-        {
-          $set: {
-            PayMonths: {
-              $map: {
-                input: "$PayMonths",
-                as: "month",
-                in: {
-                  monthName: "$$month.monthName",
-                  status: "unpaid",
+          {
+            $set: {
+              PayMonths: {
+                $map: {
+                  input: "$PayMonths",
+                  as: "month",
+                  in: {
+                    monthName: "$$month.monthName",
+                    status: "unpaid",
+                  },
                 },
               },
+              "Tarabi.status": "unpaid",
             },
-            "Tarabi.status": "unpaid",
           },
-        },
-        { $unset: "unpaidCount" },
-      ]);
-    };
+          { $unset: "unpaidCount" },
+        ])
+        .then((result) => {
+          if (result.matchedCount === 0) {
+            res.status(404).send({ message: "User not found" });
+          } else {
+            res.send({
+              message: "Year closed for user!",
+              modifiedCount: result.modifiedCount,
+            });
+          }
+        })
+        .catch((err) => {
+          console.error(err);
+          res.status(500).send({ error: "Something went wrong" });
+        });
+    });
+    app.get("/last-closing-year", async (req, res) => {
+      const result = await lastClosingCollection.findOne(
+        {},
+        { projection: { lastSendingYear: 1, _id: 0 } }
+      );
+      res.send(result);
+    });
 
-    cron.schedule(
-      "57 12 13 12 *",
-      async () => {
-        try {
-          console.log("⏰ Auto year closing started...");
-          const result = await closeYear();
-          console.log("✅ Auto year closing done:", result.modifiedCount);
-        } catch (err) {
-          console.error("❌ Auto year closing failed", err);
-        }
-      },
-      {
-        timezone: "Asia/Dhaka",
-      }
-    );
+    app.patch("/next-year", async (req, res) => {
+      const lastYear = await lastClosingCollection.findOne(
+        {},
+        { projection: { lastSendingYear: 1, _id: 0 } }
+      );
+      const result = await lastClosingCollection.updateOne(
+        {},
+        { $set: { lastSendingYear: lastYear.lastSendingYear + 1 } }
+      );
+      res.send(result);
+    });
+
+    app.get("/userPayment/:id/:year", async (req, res) => {
+      const id = req.params.id;
+      const year = parseInt(req.params.year);
+      const result = await paymentCollection
+        .aggregate([
+          { $match: { userId: id, year: year } },
+          {
+            $addFields: { feeNumber: { $toDouble: "$fee" } },
+          },
+          {
+            $group: {
+              _id: "$userId",
+              totalFee: { $sum: "$feeNumber" },
+            },
+          },
+        ])
+        .toArray();
+      res.send({ totalPaid: result[0]?.totalFee || 0 });
+    });
+
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
