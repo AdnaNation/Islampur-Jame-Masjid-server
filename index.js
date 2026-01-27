@@ -409,7 +409,9 @@ async function run() {
     });
 
     app.get("/total-payment", async (req, res) => {
+      const year = Number(req.query.year);
       const pipeline = [
+        { $match: { year } },
         {
           $addFields: {
             feeAsNumber: {
